@@ -70,19 +70,46 @@ class TestNaiveBayes(unittest.TestCase):
         nb = naive_bayes.NaiveBayes()
         nb._divide_by_classes(data_nom, target)
         nb._build_matrice_for_nominal_values()
-        self.assertDictEqual(nb.probabilities,expected)
+        self.assertDictEqual(nb.probabilities, expected)
 
     def test_predict_class(self):
         nb = naive_bayes.NaiveBayes()
-        nb.train(data,target)
+        nb.train(data, target)
         predicted_class = nb.predict_class([5.1, 3.5, 1.4, 0.2])
-        self.assertEqual('Iris-setosa',predicted_class)
-        predicted_classes = nb.predict([[5.1, 3.5, 1.4, 0.2],[5.1, 3.5, 1.4, 0.2]])
-        self.assertListEqual(['Iris-setosa','Iris-setosa'],predicted_classes)
+        self.assertEqual('Iris-setosa', predicted_class)
+        predicted_classes = nb.predict([[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4, 0.2]])
+        self.assertListEqual(['Iris-setosa', 'Iris-setosa'], predicted_classes)
 
+    def test_predict_class_nominal_values(self):
+        nb = naive_bayes.NaiveBayes()
+        nb.train(data_nom, target)
+        predicted_class = nb.predict_class(['5.1', '3.5', '1.4', '0.2'])
+        self.assertEqual('Iris-setosa', predicted_class)
+        predicted_classes = nb.predict([[5.1, 3.5, 1.4, 0.2], [5.1, 3.5, 1.4, 0.2]])
+        self.assertListEqual(['Iris-setosa', 'Iris-setosa'], predicted_classes)
 
-
+    def test_mixed_gaussian_nominal_values(self):
+        d = [[5.1, '3.5', '1.4', '0.2'], [7.0, '3.2', '4.7', '1.4'], [6.3, '3.3', '6.0', '2.5'],
+             [4.9, '3.0', '1.4', '0.2'], [6.4, '3.2', '4.5', '1.5'], [5.8, '2.7', '5.1', '1.9'],
+             [4.7, '3.2', '1.3', '0.2'], [6.9, '3.1', '4.9', '1.5'], [7.1, '3.0', '5.9', '2.1']]
+        t = ['Iris-setosa', 'Iris-versicolor', 'Iris-virginica',
+             'Iris-setosa', 'Iris-versicolor', 'Iris-virginica',
+             'Iris-setosa', 'Iris-versicolor', 'Iris-virginica']
+        nb = naive_bayes.NaiveBayes()
+        nb.train(d,t)
+        predicted_class = nb.predict_class([5.1, '3.5', '1.4', '0.2'])
+        print(predicted_class)
+        self.assertTrue(True)
 
 
 if __name__ == '__main__':
     unittest.main()
+
+
+    # mean = 1.3666
+    # std = 0.047
+    # x = 1.4
+    # import math
+    # exponent = math.exp(-(math.pow(x-mean,2)/(2*math.pow(std,2))))
+    # res = (1 / (math.sqrt(2*math.pi) * std)) * exponent
+    # print(res)

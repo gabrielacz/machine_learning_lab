@@ -1,6 +1,7 @@
 import numpy as np
 import math
 
+
 def is_float(s):
     return s.replace('.', '', 1).isdigit()
 
@@ -36,7 +37,9 @@ class NaiveBayes(object):
     def _summarize_class_elements(self, data):
         attributes_stats = []
         for attr in np.array(data).T:
-            if attr[0] is not str:
+            # print(type(attr[0]))
+            # if attr[0] is not str:
+            if attr[0].dtype.type is not np.str_:
                 attributes_stats.append((np.mean(attr), np.std(attr)))
             else:
                 attributes_stats.append((None, None))
@@ -56,9 +59,9 @@ class NaiveBayes(object):
         return attributes_stats
 
     def _stats_for_specific_attr(self, attr):
-        #TODO P(Y)!  P(y|X) = P(y).P(X|y)/P(X)
+        # TODO P(Y)!  P(y|X) = P(y).P(X|y)/P(X)
         stats = {}
-        sum_of_element_apperance = len(attr) + len(set(attr))  # because +1 to awoid 0 prob
+        sum_of_element_apperance = len(attr) + len(set(attr))  # because +1 to avoid 0 prob
         for a in attr:
             stats[a] = stats.get(a, 1.) + 1.  # every elem is min 1 time
         for key, value in stats.items():
@@ -96,13 +99,18 @@ class NaiveBayes(object):
         # print(mean)
         # print(std)
         # print(x)
-        exponent = math.exp(-(math.pow(x-mean,2)/(2*math.pow(std,2))))
+        exponent = math.exp(-(math.pow(x - mean, 2) / (2 * math.pow(std, 2))))
         # print('result')
         # print((1 / (math.sqrt(2*math.pi) * std)) * exponent)
-        return (1 / (math.sqrt(2*math.pi) * std)) * exponent
+        return (1 / (math.sqrt(2 * math.pi) * std)) * exponent
 
     def _get_probability_for_nominal_attr(self, classValue, example, index):
-        return self.probabilities[classValue][index][example]
+        if example not in self.probabilities[classValue][index]:
+            attr = self.probabilities[classValue][index]
+            sum_of_element_apperance = len(attr) + len(set(attr))
+            return 1 / sum_of_element_apperance
+        else:
+            return self.probabilities[classValue][index][example]
 
     def _is_nominal(self, classValue, index):
         return self.gassian_data[classValue][index] == (None, None)
