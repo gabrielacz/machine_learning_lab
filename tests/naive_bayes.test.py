@@ -5,8 +5,8 @@ data = [[5.1, 3.5, 1.4, 0.2], [7.0, 3.2, 4.7, 1.4], [6.3, 3.3, 6.0, 2.5],
         [4.9, 3.0, 1.4, 0.2], [6.4, 3.2, 4.5, 1.5], [5.8, 2.7, 5.1, 1.9],
         [4.7, 3.2, 1.3, 0.2], [6.9, 3.1, 4.9, 1.5], [7.1, 3.0, 5.9, 2.1]]
 data_nom = [['5.1', '3.5', '1.4', '0.2'], ['7.0', '3.2', '4.7', '1.4'], ['6.3', '3.3', '6.0', '2.5'],
-        ['4.9', '3.0', '1.4', '0.2'], ['6.4', '3.2', '4.5', '1.5'], ['5.8', '2.7', '5.1', '1.9'],
-        ['4.7', '3.2', '1.3', '0.2'], ['6.9', '3.1', '4.9', '1.5'], ['7.1', '3.0', '5.9', '2.1']]
+            ['4.9', '3.0', '1.4', '0.2'], ['6.4', '3.2', '4.5', '1.5'], ['5.8', '2.7', '5.1', '1.9'],
+            ['4.7', '3.2', '1.3', '0.2'], ['6.9', '3.1', '4.9', '1.5'], ['7.1', '3.0', '5.9', '2.1']]
 target = ['Iris-setosa', 'Iris-versicolor', 'Iris-virginica',
           'Iris-setosa', 'Iris-versicolor', 'Iris-virginica',
           'Iris-setosa', 'Iris-versicolor', 'Iris-virginica']
@@ -44,13 +44,44 @@ class TestNaiveBayes(unittest.TestCase):
         nb._divide_by_classes(data, target)
         self.assertDictEqual({}, nb.gassian_data)
         nb._calculate_gassians_params()
-        self.assertDictEqual(expected_gaussian_params,nb.gassian_data)
+        self.assertDictEqual(expected_gaussian_params, nb.gassian_data)
+
+    # def test_summarize_class_nominal_elements(self):
+    #     nb = naive_bayes.NaiveBayes()
+    #     nb._divide_by_classes(data_nom, target)
+    #     nb._summarize_class_nominal_elements()
+    #     input = ['7.0' '6.4' '6.9']
+
 
     def test_build_matrice_for_nominal_values(self):
+        expected = \
+            {'Iris-versicolor': [{'6.4': 0.3333333333333333, '7.0': 0.3333333333333333, '6.9': 0.3333333333333333},
+                                 {'3.1': 0.4, '3.2': 0.6},
+                                 {'4.9': 0.3333333333333333, '4.7': 0.3333333333333333, '4.5': 0.3333333333333333},
+                                 {'1.4': 0.4, '1.5': 0.6}],
+             'Iris-virginica': [{'7.1': 0.3333333333333333, '6.3': 0.3333333333333333, '5.8': 0.3333333333333333},
+                                {'2.7': 0.3333333333333333, '3.3': 0.3333333333333333, '3.0': 0.3333333333333333},
+                                {'6.0': 0.3333333333333333, '5.1': 0.3333333333333333, '5.9': 0.3333333333333333},
+                                {'2.5': 0.3333333333333333, '1.9': 0.3333333333333333, '2.1': 0.3333333333333333}],
+             'Iris-setosa': [{'5.1': 0.3333333333333333, '4.9': 0.3333333333333333, '4.7': 0.3333333333333333},
+                             {'3.2': 0.3333333333333333, '3.0': 0.3333333333333333, '3.5': 0.3333333333333333},
+                             {'1.4': 0.6, '1.3': 0.4}, {'0.2': 1.0}]}
+
         nb = naive_bayes.NaiveBayes()
         nb._divide_by_classes(data_nom, target)
         nb._build_matrice_for_nominal_values()
-        print(nb.probabilities)
+        self.assertDictEqual(nb.probabilities,expected)
+
+    def test_predict_class(self):
+        nb = naive_bayes.NaiveBayes()
+        nb.train(data,target)
+        predicted_class = nb.predict_class([5.1, 3.5, 1.4, 0.2])
+        self.assertEqual('Iris-setosa',predicted_class)
+        predicted_classes = nb.predict([[5.1, 3.5, 1.4, 0.2],[5.1, 3.5, 1.4, 0.2]])
+        self.assertListEqual(['Iris-setosa','Iris-setosa'],predicted_classes)
+
+
+
 
 
 if __name__ == '__main__':
