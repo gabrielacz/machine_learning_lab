@@ -46,13 +46,6 @@ class TestNaiveBayes(unittest.TestCase):
         nb._calculate_gassians_params()
         self.assertDictEqual(expected_gaussian_params, nb.gassian_data)
 
-    # def test_summarize_class_nominal_elements(self):
-    #     nb = naive_bayes.NaiveBayes()
-    #     nb._divide_by_classes(data_nom, target)
-    #     nb._summarize_class_nominal_elements()
-    #     input = ['7.0' '6.4' '6.9']
-
-
     def test_build_matrice_for_nominal_values(self):
         expected = \
             {'Iris-versicolor': [{'6.4': 0.3333333333333333, '7.0': 0.3333333333333333, '6.9': 0.3333333333333333},
@@ -96,7 +89,7 @@ class TestNaiveBayes(unittest.TestCase):
              'Iris-setosa', 'Iris-versicolor', 'Iris-virginica',
              'Iris-setosa', 'Iris-versicolor', 'Iris-virginica']
         nb = naive_bayes.NaiveBayes()
-        nb.train(d,t)
+        nb.train(d, t)
         predicted_class = nb.predict_class([5.1, '3.5', '1.4', '0.2'])
         print(predicted_class)
         self.assertTrue(True)

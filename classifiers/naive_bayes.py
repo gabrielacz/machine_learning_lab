@@ -37,8 +37,6 @@ class NaiveBayes(object):
     def _summarize_class_elements(self, data):
         attributes_stats = []
         for attr in np.array(data).T:
-            # print(type(attr[0]))
-            # if attr[0] is not str:
             if attr[0].dtype.type is not np.str_:
                 attributes_stats.append((np.mean(attr), np.std(attr)))
             else:
@@ -77,12 +75,15 @@ class NaiveBayes(object):
 
     def _calc_prob_for_class(self, examples, classValue):
         tmp_prob = 1
+        count_all_classes_elements = sum([len(v) for k, v in self.dataset_divided_by_class.items()])
+        count_this_class_elements = len(self.dataset_divided_by_class[classValue])
+        class_probability = count_this_class_elements/count_all_classes_elements
         for index, example in enumerate(examples):
             # print('class'+classValue)
             # print(example)
             # print(index)
             tmp_prob *= self._calc_prob_for_attribute(classValue, example, index)
-        return tmp_prob
+        return tmp_prob* class_probability
 
     def _calc_prob_for_attribute(self, classValue, example, index):
         if self._is_nominal(classValue, index):
@@ -94,7 +95,7 @@ class NaiveBayes(object):
     def _get_prob_for_continuous_values(self, classValue, index, x):
         mean = self.gassian_data[classValue][index][0]
         std = self.gassian_data[classValue][index][1]
-        # TODO Dystrybuanta nie rozkład! Jak jest u wazniaka
+        # TODO Dystrybuanta nie rozkład! Jak jest u wazniaka?
         # print('mean')
         # print(mean)
         # print(std)
