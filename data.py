@@ -28,11 +28,12 @@ class Data(object):
 
     def discretizie(self, discretization_method, which_attr_discretize=None, number_of_final_sets=10):
         new_dataset = []
-        for index, column in np.array(self.dataset).T:
+        for index, column in enumerate(np.array(self.dataset).T):
             if (which_attr_discretize is None or which_attr_discretize[index]) and column[0] is not np.str_:
                 new_dataset.append(discretization_method(column, number_of_final_sets))
             else:
                 new_dataset.append(column)
+        print(self.dataset)
         self.dataset = np.array(new_dataset).T
 
     def _parse_lines(self, lines, nominal_values, target_column):

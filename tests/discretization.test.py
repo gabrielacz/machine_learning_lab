@@ -1,4 +1,5 @@
 import discretization as ds
+import data
 import numpy as np
 import unittest
 
@@ -20,3 +21,8 @@ class TestData(unittest.TestCase):
         result2 = ds.divide_into_equal_intervals(input2, 3)
         self.assertListEqual(result,['<1.2 1.2>', '<3.2 5.0>', '<6.0 7.0>', '<8.0 9.0>'])
         self.assertListEqual(result2,['<1 1>', '<x x>', '<4 4>'])
+
+    def test_discretization_method(self):
+        dl = data.Data()
+        dl.load('iris.data.test.txt', 4)
+        dl.discretizie(ds.divide_into_equal_intervals,number_of_final_sets=3)
