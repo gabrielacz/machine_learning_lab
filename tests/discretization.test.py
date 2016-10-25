@@ -15,5 +15,8 @@ class TestData(unittest.TestCase):
 
     def test_divide_into_equal_intervals(self):
         input = np.array([1.2, 3.4, 5, 3.2, 4.5, 5, 6.7, 8, 9, 4, 6, 7, 8])
+        input2 = np.array([1,1,1,4,4,4])
         result = ds.divide_into_equal_intervals(input, 4)
-        print(result)
+        result2 = ds.divide_into_equal_intervals(input2, 3)
+        self.assertListEqual(result,['<1.2 1.2>', '<3.2 5.0>', '<6.0 7.0>', '<8.0 9.0>'])
+        self.assertListEqual(result2,['<1 1>', '<x x>', '<4 4>'])

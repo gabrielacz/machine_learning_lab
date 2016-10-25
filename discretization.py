@@ -4,32 +4,20 @@ TEMPLATE = '<{} {}>'
 
 
 def divide_into_equal_intervals(data_column, number_of_final_sets):
+    def __find_first_greater_element_index(elem, array):
+        i = 0
+        while elem > array[i]:
+            i += 1
+        return i
     sorted_data = sorted(data_column)
-    print(sorted_data)
-
     min = sorted_data[0]
     max = sorted_data[-1]
-    interval_size = (max - min) / number_of_final_sets
-    # print('interval_size: {}'.format(interval_size))
-    current_limit = min
-    splited_list = [[]]
-    current_index = 0
-    # print(sorted_data)
+    limits = np.linspace(min, max, number_of_final_sets+1)[1:]
+    splited_array = [[] for _ in range(len(limits))]
     for elem in sorted_data:
-        # while elem < current_limit:
-        #     current_limit+=interval_size
-
-        # print(splited_list)
-        # print(current_limit)
-        if elem <= current_limit:
-            splited_list[current_index].append(elem)
-        else:
-            current_limit += interval_size
-            current_index += 1
-            splited_list.append([elem])
-    print(splited_list)
-
-    return [TEMPLATE.format(x[0], x[-1]) for x in splited_list]
+        index = __find_first_greater_element_index(elem,limits)
+        splited_array[index].append(elem)
+    return [TEMPLATE.format(x[0], x[-1]) if x else TEMPLATE.format('x', 'x') for x in splited_array]
 
 
 def divide_elements_equally(data_column, number_of_final_sets):
