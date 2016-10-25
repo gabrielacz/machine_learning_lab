@@ -25,11 +25,11 @@ class TestData(unittest.TestCase):
 
     def test_discretization_method(self):
         dl = data.Data()
-        dl.load('iris.data.test.txt', 4)
+        dl.load('iris.data.test.txt', 5)
         dl.discretizie(ds.divide_into_equal_intervals, number_of_final_sets=3)
 
     def test_discretization_method2(self):
         dl = data.Data()
-        dl.load('iris.data.test.txt', 4)
+        dl.load('iris.data.test.txt', 5)
         dl.discretizie(ds.divide_elements_equally, number_of_final_sets=3)
         # print(dl.dataset)

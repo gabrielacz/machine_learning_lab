@@ -8,31 +8,31 @@ def is_float(s):
 
 class NaiveBayes(object):
     def __init__(self):
-        self.probabilities = {}
-        self.gassian_data = {}
-        self.dataset_divided_by_class = {}
-        self.trained = False
+        self.__probabilities = {}
+        self.__gassian_data = {}
+        self.__dataset_divided_by_class = {}
+        self.__trained = False
 
     def train(self, dataset, target):
         self._divide_by_classes(dataset, target)
         self._calculate_gassians_params()
         self._build_matrice_for_nominal_values()
-        self.trained = True
+        self.__trained = True
 
     def predict(self, dataset):  # untested
-        if not self.trained:
+        if not self.__trained:
             raise Exception('Model not trained yet')
-        return [self.predict_class(data_row) for data_row in dataset]
+        return [self._predict_class(data_row) for data_row in dataset]
 
     def _divide_by_classes(self, dataset, target):
         for row_data, row_class in zip(dataset, target):
-            if row_class not in self.dataset_divided_by_class.keys():
-                self.dataset_divided_by_class[row_class] = []
-            self.dataset_divided_by_class[row_class].append(row_data)
+            if row_class not in self.__dataset_divided_by_class.keys():
+                self.__dataset_divided_by_class[row_class] = []
+            self.__dataset_divided_by_class[row_class].append(row_data)
 
     def _calculate_gassians_params(self):
-        for key, data in self.dataset_divided_by_class.items():
-            self.gassian_data[key] = self._summarize_class_elements(data)
+        for key, data in self.__dataset_divided_by_class.items():
+            self.__gassian_data[key] = self._summarize_class_elements(data)
 
     def _summarize_class_elements(self, data):
         attributes_stats = []
@@ -44,8 +44,8 @@ class NaiveBayes(object):
         return attributes_stats
 
     def _build_matrice_for_nominal_values(self):
-        for key, data in self.dataset_divided_by_class.items():
-            self.probabilities[key] = self._summarize_class_nominal_elements(data)
+        for key, data in self.__dataset_divided_by_class.items():
+            self.__probabilities[key] = self._summarize_class_nominal_elements(data)
 
     def _summarize_class_nominal_elements(self, data):
         attributes_stats = []
@@ -66,17 +66,17 @@ class NaiveBayes(object):
             stats[key] = value / sum_of_element_apperance
         return stats
 
-    def predict_class(self, data_row):  # untested
+    def _predict_class(self, data_row):  # untested
         probabilities = {}
-        for classValue, examples in self.dataset_divided_by_class.items():
+        for classValue, examples in self.__dataset_divided_by_class.items():
             probabilities[classValue] = self._calc_prob_for_class(data_row, classValue)
         # print(probabilities)
         return self._choose_best_class(probabilities)
 
     def _calc_prob_for_class(self, examples, classValue):
         tmp_prob = 1
-        count_all_classes_elements = sum([len(v) for k, v in self.dataset_divided_by_class.items()])
-        count_this_class_elements = len(self.dataset_divided_by_class[classValue])
+        count_all_classes_elements = sum([len(v) for k, v in self.__dataset_divided_by_class.items()])
+        count_this_class_elements = len(self.__dataset_divided_by_class[classValue])
         class_probability = count_this_class_elements/count_all_classes_elements
         for index, example in enumerate(examples):
             # print('class'+classValue)
@@ -93,8 +93,8 @@ class NaiveBayes(object):
             return self._get_prob_for_continuous_values(classValue, index, example)
 
     def _get_prob_for_continuous_values(self, classValue, index, x):
-        mean = self.gassian_data[classValue][index][0]
-        std = self.gassian_data[classValue][index][1]
+        mean = self.__gassian_data[classValue][index][0]
+        std = self.__gassian_data[classValue][index][1]
         # TODO Dystrybuanta nie rozkład! Jak jest u wazniaka?
         # print('mean')
         # print(mean)
@@ -106,15 +106,15 @@ class NaiveBayes(object):
         return (1 / (math.sqrt(2 * math.pi) * std)) * exponent
 
     def _get_probability_for_nominal_attr(self, classValue, example, index):
-        if example not in self.probabilities[classValue][index]:
-            attr = self.probabilities[classValue][index]
+        if example not in self.__probabilities[classValue][index]:
+            attr = self.__probabilities[classValue][index]
             sum_of_element_apperance = len(attr) + len(set(attr))
             return 1 / sum_of_element_apperance
         else:
-            return self.probabilities[classValue][index][example]
+            return self.__probabilities[classValue][index][example]
 
     def _is_nominal(self, classValue, index):
-        return self.gassian_data[classValue][index] == (None, None)
+        return self.__gassian_data[classValue][index] == (None, None)
 
     def _choose_best_class(self, probabilities):
         max_class = None
