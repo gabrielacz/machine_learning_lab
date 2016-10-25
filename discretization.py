@@ -18,13 +18,16 @@ def divide_into_equal_intervals(data_column, number_of_final_sets):
 
 
 def divide_elements_equally(data_column, number_of_final_sets):
+    def __find_bads(elem, sets):
+        for set in sets:
+            if elem in set:
+                return min(set),max(set)
     sorted_data = sorted(data_column)
     splited_array = np.array_split(sorted_data, number_of_final_sets)
-
-    new_array = []
-    for part in splited_array:
-        for elem in part:
-            new_array.append(TEMPLATE.format(part[0], part[-1]))
-    return new_array
+    parsed_data_column = []
+    for elem in data_column:
+        begin, end = __find_bads(elem, splited_array)
+        parsed_data_column.append(TEMPLATE.format(begin, end))
+    return parsed_data_column
 
     # http://stackoverflow.com/questions/6163334/binning-data-in-python-with-scipy-numpy
