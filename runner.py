@@ -27,9 +27,11 @@ class Runner(object):
             test_dataset, test_real_labels = dataset[1]
             nb = naive_bayes.NaiveBayes()
             nb.train(train_dataset, test_real_labels)
-            test_predicted_labels = nb.predict(test_dataset)
+            test_predicted_labels = nb.predict2(test_dataset) #predict2
             whole_test_set_predicted.extend(test_predicted_labels)
             whole_test_set_real.extend(test_real_labels)
+        print(whole_test_set_predicted)
+        print(whole_test_set_real)
         self.__build_confusion_matrix(whole_test_set_predicted, whole_test_set_real)
 
     def get_confusion_matrix(self):
@@ -91,6 +93,7 @@ class Runner(object):
 def main():
     runner = Runner()
     runner.load_data_set('datasets/iris.data.txt', 5)
+    runner.discretize_data_set(discretization.divide_into_equal_intervals,5)
     runner.start_crossvalidation(3)
     print(runner.get_confusion_matrix())
     print(runner.get_accuracy())

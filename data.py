@@ -53,7 +53,7 @@ class Data(object):
         # parsing
         target, dataset = [], []
         for line in lines:
-            if line:
+            if line: # lines on the end of file
                 target.append(line[target_column])
                 dataset.append(self._parse_line(line[:target_column] + line[target_column + 1:], nominal_values))
         return dataset, target
