@@ -1,6 +1,8 @@
 import csv
 import functools
 import numpy as np
+from random import randint
+from random import shuffle
 
 
 def is_float(s):
@@ -23,7 +25,7 @@ class Data(object):
         :param nominal_columns: list with true values where nominals are; on target_column value is unimportant
         :return:
         """
-        target_column -= 1 # so we begin counting from 1 not 0
+        target_column -= 1  # so we begin counting from 1 not 0
         lines = list(csv.reader(open(filename, "r")))
         self.dataset, self.target = self._parse_lines(lines, nominal_columns, target_column)
 
@@ -44,7 +46,11 @@ class Data(object):
         datasets, targets = self._get_splited_dataset(number_of_parts)
         return self._divide_into_training_and_test(datasets, targets)
 
-    def _parse_lines(self, lines, nominal_values, target_column):
+    def _parse_lines(self, _lines, nominal_values, target_column):
+        # mixing elements, so crosswalidation wont have one class
+        lines = [line for line in _lines]
+        shuffle(lines)
+        # parsing
         target, dataset = [], []
         for line in lines:
             if line:

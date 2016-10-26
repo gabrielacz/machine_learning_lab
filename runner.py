@@ -30,8 +30,10 @@ class Runner(object):
             test_predicted_labels = nb.predict(test_dataset)
             whole_test_set_predicted.extend(test_predicted_labels)
             whole_test_set_real.extend(test_real_labels)
-        self.__build_confiusion_matrix(whole_test_set_predicted, whole_test_set_real)
-        print(self.__confusion_matrix)
+        self.__build_confusion_matrix(whole_test_set_predicted, whole_test_set_real)
+
+    def get_confusion_matrix(self):
+        return self.__confusion_matrix
 
     def get_accuracy(self):
         """Ilość trafionych przez wszystkie - suma przekatniej przez sume macierzy"""
@@ -63,18 +65,18 @@ class Runner(object):
 
     def __calculate_partial_recall(self, class_index, class_value):
         hits = self.__confusion_matrix[class_index][class_index]
-        all_shots = sum(x[class_value] for x in self.__confusion_matrix)
+        all_shots = sum(x[class_index] for x in self.__confusion_matrix)
         return hits / all_shots
 
     def get_Fscore(self):
         precision = self.get_precision()
         recall = self.get_recall()
-        return precision * recall / (precision + recall)
+        return 2*(precision * recall) / (precision + recall)
 
-    def __build_confiusion_matrix(self, whole_test_set_predicted, whole_test_set_real):
+    def __build_confusion_matrix(self, whole_test_set_predicted, whole_test_set_real):
         self.__confusion_matrix_labels = list(set(whole_test_set_predicted + whole_test_set_real))
         matrix_size = len(self.__confusion_matrix_labels)
-        self.__confusion_matrix = [[0 for _ in range(matrix_size)] for _ in range(matrix_size)]
+        self.__confusion_matrix = [[0. for _ in range(matrix_size)] for _ in range(matrix_size)]
         for i, element in enumerate(whole_test_set_predicted):
             real_class = whole_test_set_real[i]
             predicted = whole_test_set_predicted[i]
@@ -83,14 +85,19 @@ class Runner(object):
     def __increment_matrix_on(self, real_class, predicted):
         real_class_index = self.__confusion_matrix_labels.index(real_class)
         predicted_class_index = self.__confusion_matrix_labels.index(predicted)
-        self.__confusion_matrix[predicted_class_index][real_class_index] += 1
+        self.__confusion_matrix[predicted_class_index][real_class_index] += 1.
 
 
 def main():
     runner = Runner()
     runner.load_data_set('datasets/iris.data.txt', 5)
-    runner.start_crossvalidation(10)
-    datasets_path = []
+    runner.start_crossvalidation(3)
+    print(runner.get_confusion_matrix())
+    print(runner.get_accuracy())
+    print(runner.get_precision())
+    print(runner.get_recall())
+    print(runner.get_Fscore())
+    # datasets_path = []
     # for dataset_path in datasets_path:
 
 

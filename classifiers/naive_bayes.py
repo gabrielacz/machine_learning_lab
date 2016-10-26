@@ -19,7 +19,7 @@ class NaiveBayes(object):
         self._build_matrice_for_nominal_values()
         self.__trained = True
 
-    def predict(self, dataset):  # untested
+    def predict(self, dataset):
         if not self.__trained:
             raise Exception('Model not trained yet')
         return [self._predict_class(data_row) for data_row in dataset]
@@ -53,7 +53,7 @@ class NaiveBayes(object):
             if attr[0].dtype.type is np.str_:
                 attributes_stats.append(self._stats_for_specific_attr(attr))
             else:
-                attributes_stats.append({})  # empy in case of mixed args
+                attributes_stats.append({})  # empty in case of mixed args
         return attributes_stats
 
     def _stats_for_specific_attr(self, attr):
@@ -66,43 +66,34 @@ class NaiveBayes(object):
             stats[key] = value / sum_of_element_apperance
         return stats
 
-    def _predict_class(self, data_row):  # untested
+    def _predict_class(self, data_row):
         probabilities = {}
         for classValue, examples in self.__dataset_divided_by_class.items():
             probabilities[classValue] = self._calc_prob_for_class(data_row, classValue)
-        # print(probabilities)
         return self._choose_best_class(probabilities)
 
     def _calc_prob_for_class(self, examples, classValue):
         tmp_prob = 1
         count_all_classes_elements = sum([len(v) for k, v in self.__dataset_divided_by_class.items()])
         count_this_class_elements = len(self.__dataset_divided_by_class[classValue])
-        class_probability = count_this_class_elements/count_all_classes_elements
+        class_probability = count_this_class_elements / count_all_classes_elements
         for index, example in enumerate(examples):
-            # print('class'+classValue)
-            # print(example)
-            # print(index)
             tmp_prob *= self._calc_prob_for_attribute(classValue, example, index)
-        return tmp_prob* class_probability
+        return tmp_prob * class_probability
 
     def _calc_prob_for_attribute(self, classValue, example, index):
         if self._is_nominal(classValue, index):
             return self._get_probability_for_nominal_attr(classValue, example, index)
         else:
-            # print(self._get_prob_for_continuous_values(classValue, index, example))
             return self._get_prob_for_continuous_values(classValue, index, example)
 
     def _get_prob_for_continuous_values(self, classValue, index, x):
         mean = self.__gassian_data[classValue][index][0]
         std = self.__gassian_data[classValue][index][1]
+        if std == 0:
+            return 1
         # TODO Dystrybuanta nie rozkład! Jak jest u wazniaka?
-        # print('mean')
-        # print(mean)
-        # print(std)
-        # print(x)
         exponent = math.exp(-(math.pow(x - mean, 2) / (2 * math.pow(std, 2))))
-        # print('result')
-        # print((1 / (math.sqrt(2*math.pi) * std)) * exponent)
         return (1 / (math.sqrt(2 * math.pi) * std)) * exponent
 
     def _get_probability_for_nominal_attr(self, classValue, example, index):
