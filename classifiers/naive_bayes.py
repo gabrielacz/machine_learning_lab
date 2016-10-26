@@ -29,8 +29,8 @@ class NaiveBayes(object):
         probabilities = {}
         for classValue, examples in self._dataset_divided_by_class.items():
             probabilities[classValue] = self._calc_prob_of_class2(classValue, data_row, examples)
-        print(data_row)
-        print(probabilities)
+        # print(data_row)
+        # print(probabilities)
         return self._choose_best_class2(probabilities)
 
     def _calc_prob_of_class2(self, classValue, data_row, examples):

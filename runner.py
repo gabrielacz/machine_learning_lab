@@ -26,13 +26,11 @@ class Runner(object):
             train_dataset, train_labels = dataset[0]
             test_dataset, test_real_labels = dataset[1]
             nb = naive_bayes.NaiveBayes()
-            nb.train(train_dataset, test_real_labels)
-            test_predicted_labels = nb.predict2(test_dataset) #predict2
+            nb.train(train_dataset, train_labels)
+            test_predicted_labels = nb.predict2(test_dataset)
             whole_test_set_predicted.extend(test_predicted_labels)
             whole_test_set_real.extend(test_real_labels)
-        print(whole_test_set_predicted)
-        print(whole_test_set_real)
-        self.__build_confusion_matrix(whole_test_set_predicted, whole_test_set_real)
+        self._build_confusion_matrix(whole_test_set_predicted, whole_test_set_real)
 
     def get_confusion_matrix(self):
         return self.__confusion_matrix
@@ -75,7 +73,7 @@ class Runner(object):
         recall = self.get_recall()
         return 2*(precision * recall) / (precision + recall)
 
-    def __build_confusion_matrix(self, whole_test_set_predicted, whole_test_set_real):
+    def _build_confusion_matrix(self, whole_test_set_predicted, whole_test_set_real):
         self.__confusion_matrix_labels = list(set(whole_test_set_predicted + whole_test_set_real))
         matrix_size = len(self.__confusion_matrix_labels)
         self.__confusion_matrix = [[0. for _ in range(matrix_size)] for _ in range(matrix_size)]
@@ -83,6 +81,7 @@ class Runner(object):
             real_class = whole_test_set_real[i]
             predicted = whole_test_set_predicted[i]
             self.__increment_matrix_on(real_class, predicted)
+        return self.__confusion_matrix
 
     def __increment_matrix_on(self, real_class, predicted):
         real_class_index = self.__confusion_matrix_labels.index(real_class)
