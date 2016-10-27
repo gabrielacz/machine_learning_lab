@@ -1,6 +1,7 @@
 import data
 from classifiers import naive_bayes
 import discretization
+from collections import namedtuple
 
 
 # wpływ podziały na przedziały w croswalidacji
@@ -71,7 +72,7 @@ class Runner(object):
     def get_Fscore(self):
         precision = self.get_precision()
         recall = self.get_recall()
-        return 2*(precision * recall) / (precision + recall)
+        return 2 * (precision * recall) / (precision + recall)
 
     def _build_confusion_matrix(self, whole_test_set_predicted, whole_test_set_real):
         self.__confusion_matrix_labels = list(set(whole_test_set_predicted + whole_test_set_real))
@@ -89,18 +90,108 @@ class Runner(object):
         self.__confusion_matrix[predicted_class_index][real_class_index] += 1.
 
 
+ALL_DATASETS = [
+    # ('datasets/iris.data.txt', 5), # all continuous
+    ('datasets/wine.data.txt', 1),  # all continuous
+    ('datasets/pima-indians-diabetes.data.txt', 9),  # all continuous
+    ('datasets/car.data', 7),  # only nominal values
+]
+CONTINUOUS_DATASETS = [
+    # ('datasets/iris.data.txt', 5), # all continuous
+    ('datasets/wine.data.txt', 1),  # all continuous
+    ('datasets/pima-indians-diabetes.data.txt', 9),  # all continuous
+]
+NOMINAL_DATASETS = [
+    ('datasets/car.data', 7),  # only nominal values
+]
+Measures = namedtuple('Measures', 'n similarity_matrix  accuracy precision recall fscore')
+
+
+def save_data_to(results, filename):
+    destination = open(filename, 'w+')
+    headline = 'ilosc zbiorow;accuracy;precision;recall;fscore\n'
+
+    for class_name, measures in results.items():
+        destination.write('{}\n'.format(class_name))
+        destination.write(headline)
+        for i, measure in enumerate(measures):
+            line = '{};{};{};{};{}\n'.format(measure.n,
+                                             measure.accuracy,
+                                             measure.precision,
+                                             measure.recall,
+                                             measure.fscore).replace('.', ',')
+            destination.write(line)
+        destination.write('\n')
+
+
+def test_cross_validation(filename):
+    results = {}
+    for dataset, target_column_index in ALL_DATASETS:
+        for i in range(2, 10):
+            runner = Runner()
+            runner.load_data_set(dataset, target_column_index)
+            runner.start_crossvalidation(i)
+            measures = Measures(
+                i,
+                runner.get_confusion_matrix(),
+                runner.get_accuracy(),
+                runner.get_precision(),
+                runner.get_recall(),
+                runner.get_Fscore()
+            )
+            results[dataset] = results.get(dataset, []) + [measures]
+    save_data_to(results, filename)
+
+
+def test_discretization(filename, discretization_method, crosvalidation_sets=3):
+    results = {}
+    for dataset, target_column_index in CONTINUOUS_DATASETS:
+        for i in range(4, 10):
+            runner = Runner()
+            runner.load_data_set(dataset, target_column_index)
+            runner.discretize_data_set(discretization_method, i)
+            runner.start_crossvalidation(crosvalidation_sets)
+            measures = Measures(
+                i,
+                runner.get_confusion_matrix(),
+                runner.get_accuracy(),
+                runner.get_precision(),
+                runner.get_recall(),
+                runner.get_Fscore()
+            )
+            results[dataset] = results.get(dataset, []) + [measures]
+    save_data_to(results, filename)
+
+def test_gaus(filename, crosvalidation_sets=3):
+    results = {}
+    for dataset, target_column_index in CONTINUOUS_DATASETS:
+        for i in range(4, 10):
+            runner = Runner()
+            runner.load_data_set(dataset, target_column_index)
+            runner.start_crossvalidation(crosvalidation_sets)
+            measures = Measures(
+                i,
+                runner.get_confusion_matrix(),
+                runner.get_accuracy(),
+                runner.get_precision(),
+                runner.get_recall(),
+                runner.get_Fscore()
+            )
+            results[dataset] = results.get(dataset, []) + [measures]
+    save_data_to(results, filename)
+
+def test_everything_on_set(filename, dataset, target_column, crosvalidation_sets=3, discretization_parts=4):
+    pass
+
+
 def main():
-    runner = Runner()
-    runner.load_data_set('datasets/iris.data.txt', 5)
-    runner.discretize_data_set(discretization.divide_into_equal_intervals,5)
-    runner.start_crossvalidation(3)
-    print(runner.get_confusion_matrix())
-    print(runner.get_accuracy())
-    print(runner.get_precision())
-    print(runner.get_recall())
-    print(runner.get_Fscore())
-    # datasets_path = []
-    # for dataset_path in datasets_path:
+    # test_cross_validation('results/test_cross_validation.csv')
+    test_discretization('results/test_divide_into_equal_intervals.csv',
+                        discretization.divide_into_equal_intervals,
+                        crosvalidation_sets=6)
+    test_discretization('results/test_divide_elements_equally.csv',
+                        discretization.divide_elements_equally,
+                        crosvalidation_sets=6)
 
 
 if __name__ == '__main__':
