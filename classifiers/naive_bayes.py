@@ -79,7 +79,7 @@ class NaiveBayes(object):
                 max_prob = prob
         return max_class
 
-    ##########################################################
+    #old method
     def predict(self, dataset):
         if not self._trained:
             raise Exception('Model not trained yet')

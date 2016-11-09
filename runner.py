@@ -4,9 +4,6 @@ import discretization
 from collections import namedtuple
 
 
-# wpływ podziały na przedziały w croswalidacji
-# liczba przedziałów dyskretyzacji w met1, met2, gaussie
-
 class Runner(object):
     def __init__(self):
         self.__data = data.Data()
@@ -162,6 +159,7 @@ def test_discretization(filename, discretization_method, crosvalidation_sets=3):
             results[dataset] = results.get(dataset, []) + [measures]
     save_data_to(results, filename)
 
+
 def test_gaus(filename, crosvalidation_sets=3):
     results = {}
     for dataset, target_column_index in CONTINUOUS_DATASETS:
@@ -180,18 +178,37 @@ def test_gaus(filename, crosvalidation_sets=3):
             results[dataset] = results.get(dataset, []) + [measures]
     save_data_to(results, filename)
 
+
 def test_everything_on_set(filename, dataset, target_column, crosvalidation_sets=3, discretization_parts=4):
     pass
 
 
+def run_for_one():
+    runner = Runner()
+    runner.load_data_set('datasets/wine.data.txt', 1)
+    # runner.discretize_data_set(discretization_method, 5)
+    runner.start_crossvalidation(10)
+    measures = Measures(
+        -1,
+        runner.get_confusion_matrix(),
+        runner.get_accuracy(),
+        runner.get_precision(),
+        runner.get_recall(),
+        runner.get_Fscore()
+    )
+    print(measures)
+
+
 def main():
+    run_for_one()
+
     # test_cross_validation('results/test_cross_validation.csv')
-    test_discretization('results/test_divide_into_equal_intervals.csv',
-                        discretization.divide_into_equal_intervals,
-                        crosvalidation_sets=6)
-    test_discretization('results/test_divide_elements_equally.csv',
-                        discretization.divide_elements_equally,
-                        crosvalidation_sets=6)
+    # test_discretization('results/test_divide_into_equal_intervals.csv',
+    #                     discretization.divide_into_equal_intervals,
+    #                     crosvalidation_sets=6)
+    # test_discretization('results/test_divide_elements_equally.csv',
+    #                     discretization.divide_elements_equally,
+    #                     crosvalidation_sets=6)
 
 
 if __name__ == '__main__':
