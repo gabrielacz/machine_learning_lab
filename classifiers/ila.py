@@ -25,28 +25,33 @@ class Rule:
     def __str__(self):
         return 'IF {} THEN {}'.format(self.__premise_to_str(), self.class_name)
 
+    def __repr__(self):
+        return 'IF {} THEN {}'.format(self.__premise_to_str(), self.class_name)
+
     def __premise_to_str(self):
         formated_premises = [' {} = {} '.format(attr_index, value) for attr_index, value in
                              self.attributes_values.items()]
         return ' and '.join(formated_premises)
 
+    def is_satisfied(self, row):
+        is_satisfied = True
+        for index, value in self.attributes_values.items():
+            is_satisfied = is_satisfied and row[index] == value
+        return is_satisfied
+
 
 class Ila(object):
     def __init__(self):
-        self._rules = []  # TODO choose datatype
+        self._rules = []
 
     def train(self, dataset, target):
         divided = self.divide_by_classes(dataset, target)
         self.iterate_over_subtables(divided)
 
-    # def all_examples_are_marked(self, examples):
-    #     return all(x.is_marked for x in examples)
-
     def iterate_over_subtables(self, table_divided_by_class):
         for current_class_name, current_examples in table_divided_by_class.items():
-            nb_of_attributes = len(current_examples[0])
-            rest_examples = self.all_other_examples(table_divided_by_class, current_class_name)
-            summup_rest_examples = self.summup_examples(rest_examples, take_marked=True)
+            nb_of_attributes = len(current_examples[0].value)
+            rest_examples = self.merge_other_examples(table_divided_by_class, current_class_name)
             j = 1
             for _ in range(nb_of_attributes):  # ile ma byc atryb w kombinacji dla j nal do 1, 2, 3, liczny attrybutów
                 attributes_combination = list(itertools.combinations(range(nb_of_attributes), j))
@@ -55,54 +60,72 @@ class Ila(object):
                     max_rule, last_max_combination = \
                         self.find_max_combination(current_class_name,
                                                   current_examples,
-                                                  summup_rest_examples,
+                                                  rest_examples,
                                                   attributes_combination)
-                    self._rules.append(max_rule)
                     if max_rule:  # could be None
+                        self._rules.append(max_rule)
                         attributes_combination.remove(last_max_combination)
                 j += 1
+                # TODO check if there are still unmatch examples in this class
 
-                #     TODO check if there are still unmatch examples in this class
-
-    def find_max_combination(self, current_class_name, current_examples, summup_rest_examples, attributes_combination):
+    def find_max_combination(self, current_class_name, current_examples, rest_examples, attributes_combination):
         max_rule = None
-        summup_current_examples = self.summup_examples(current_examples, take_marked=False)
-        best_value_for_all_combinatoins = None
-        occurences_of_best = 0
+        best_value_for_all_combinations = None
+        occurrences_of_best = 0
+        marked_examples_indexes = []
         best_combination = None
         for combination in attributes_combination:
-            best_for_current_combination, occurences_of_current_best = \
-                self.find_best_value_for_combination(combination, summup_current_examples, summup_rest_examples, current_examples)
-            if occurences_of_current_best and occurences_of_current_best > occurences_of_best:
-                best_value_for_all_combinatoins = best_for_current_combination
-                occurences_of_best = occurences_of_current_best
+            best_for_current_combination, occurences_of_current_best, tmp_marked_examples_indexes = \
+                self.find_best_value_for_combination(combination, current_examples, rest_examples)
+            if occurences_of_current_best and occurences_of_current_best > occurrences_of_best:
+                best_value_for_all_combinations = best_for_current_combination
+                occurrences_of_best = occurences_of_current_best
                 best_combination = combination
+                marked_examples_indexes = tmp_marked_examples_indexes
         if best_combination:
-            max_rule = Rule(best_value_for_all_combinatoins, current_class_name)
+            max_rule = Rule(best_value_for_all_combinations, current_class_name)
+            for example_index in marked_examples_indexes:
+                current_examples[example_index].is_marked = True
+                marked_examples_indexes = []
         return max_rule, best_combination
 
-    def find_best_value_for_combination(self, combination, summup_current_examples, summup_rest_examples):
+    def find_best_value_for_combination(self, combination, current_examples, rest_examples):  # tested
+        best_combination = {}  # key is attr column and value is its value
+        timmes_best_ocurent = 0
+        ocurrences_of_attr = self.calculate_occurences(combination, current_examples)
+        for attrb, nb_of_occurences in ocurrences_of_attr.items():
+            is_in_rest_example = self.is_given_attribiute_value_in_table(attrb, combination, rest_examples)
+            if nb_of_occurences > timmes_best_ocurent and not is_in_rest_example:
+                timmes_best_ocurent = nb_of_occurences
+                best_combination = {}
+                for i, elem in enumerate(attrb):
+                    best_combination[combination[i]] = elem
+        # mark examples with best_combination
+        marked_examples_indexes = []
+        for exam_index, example in enumerate(current_examples):
+            matches = [example.value[attr_index] == attr_value for attr_index, attr_value in best_combination.items()]
+            if matches and all(matches):
+                marked_examples_indexes.append(exam_index)
+                # example.is_marked = True
 
-        # for attrib_value, nb_of_occurences in summup_current_examples.items():
+        return best_combination, timmes_best_ocurent, marked_examples_indexes
 
+    def calculate_occurences(self, combination, current_examples):  # tested
+        ocurrences_of_attr = {}
+        for example in current_examples:
+            if not example.is_marked:
+                example_values = []
+                for index in combination:
+                    example_values.append(example.value[index])
+                ocurrences_of_attr[tuple(example_values)] = ocurrences_of_attr.get(tuple(example_values), 0) + 1
+        return ocurrences_of_attr
 
-        return None,None
-
-    def all_other_examples(self, table_divided_by_class, current_class_name):  # tested
+    def merge_other_examples(self, table_divided_by_class, current_class_name):  # tested
         rest_examples = []
         for class_name, examples in table_divided_by_class.items():
             if class_name != current_class_name:
                 rest_examples.extend(examples)
         return rest_examples
-
-    def summup_examples(self, examples, take_marked=True):  # tested
-        summup = [{} for _ in range(len(examples[0].value))]
-        for example in examples:
-            for attribute_index, attribute_value in enumerate(example.value):
-                if not (not take_marked and example.is_marked):
-                    the_same_value_occurences = summup[attribute_index].get(attribute_value, 0) + 1
-                    summup[attribute_index][attribute_value] = the_same_value_occurences
-        return summup
 
     @staticmethod
     def divide_by_classes(dataset, target):  # tested
@@ -114,5 +137,24 @@ class Ila(object):
             dataset_divided_by_class[row_class].append(example)
         return dataset_divided_by_class
 
-    def predict(self, dataset):
-        pass
+    def is_given_attribiute_value_in_table(self, attrb, combination, rest_examples):  # tested
+        for example in rest_examples:
+            example_values = []
+            for index in combination:
+                example_values.append(example.value[index])
+            if tuple(example_values) == (attrb):
+                return True
+        return False
+
+    #####PREDICTION
+    def predict(self, x_test):
+        predicted = []
+        for row in x_test:
+            predicted.append(self.__predict(row))
+        return predicted
+
+    def __predict(self, row):
+        for rule in self._rules:
+            if rule.is_satisfied(row):
+                return rule.class_name
+        return '<undefined>'

@@ -1,5 +1,6 @@
 import data
 from classifiers import naive_bayes
+from classifiers import ila
 import discretization
 from collections import namedtuple
 
@@ -16,16 +17,16 @@ class Runner(object):
     def discretize_data_set(self, discretization_method, n_of_sets):
         self.__data.discretizie(discretization_method, number_of_final_sets=n_of_sets)
 
-    def start_crossvalidation(self, number_of_partitions):
+    def start_crossvalidation(self, number_of_partitions, classifier):
         datasets_generator = self.__data.crossvalidation_gen(number_of_partitions)
         whole_test_set_predicted = []
         whole_test_set_real = []
         for dataset in datasets_generator:
             train_dataset, train_labels = dataset[0]
             test_dataset, test_real_labels = dataset[1]
-            nb = naive_bayes.NaiveBayes()
-            nb.train(train_dataset, train_labels)
-            test_predicted_labels = nb.predict2(test_dataset)
+            # classifier = naive_bayes.NaiveBayes()
+            classifier.train(train_dataset, train_labels)
+            test_predicted_labels = classifier.predict(test_dataset)
             whole_test_set_predicted.extend(test_predicted_labels)
             whole_test_set_real.extend(test_real_labels)
         self._build_confusion_matrix(whole_test_set_predicted, whole_test_set_real)
@@ -52,6 +53,7 @@ class Runner(object):
     def __calculate_partial_precision(self, class_index, class_value):
         hits = self.__confusion_matrix[class_index][class_index]
         all_shots = sum(self.__confusion_matrix[class_index])
+        all_shots = 0.001 if all_shots == 0 else all_shots
         return hits / all_shots
 
     def get_recall(self):
@@ -64,6 +66,7 @@ class Runner(object):
     def __calculate_partial_recall(self, class_index, class_value):
         hits = self.__confusion_matrix[class_index][class_index]
         all_shots = sum(x[class_index] for x in self.__confusion_matrix)
+        all_shots = 0.001 if all_shots == 0 else all_shots
         return hits / all_shots
 
     def get_Fscore(self):
@@ -95,8 +98,9 @@ ALL_DATASETS = [
 ]
 CONTINUOUS_DATASETS = [
     # ('datasets/iris.data.txt', 5), # all continuous
-    ('datasets/wine.data.txt', 1),  # all continuous
-    ('datasets/pima-indians-diabetes.data.txt', 9),  # all continuous
+    # ('datasets/wine.data.txt', 1),  # all continuous
+    ('datasets/glass.data', 10),  # all continuous
+    # ('datasets/pima-indians-diabetes.data.txt', 9),  # all continuous
 ]
 NOMINAL_DATASETS = [
     ('datasets/car.data', 7),  # only nominal values
@@ -147,7 +151,7 @@ def test_discretization(filename, discretization_method, crosvalidation_sets=3):
             runner = Runner()
             runner.load_data_set(dataset, target_column_index)
             runner.discretize_data_set(discretization_method, i)
-            runner.start_crossvalidation(crosvalidation_sets)
+            runner.start_crossvalidation(crosvalidation_sets, ila.Ila())
             measures = Measures(
                 i,
                 runner.get_confusion_matrix(),
@@ -157,6 +161,7 @@ def test_discretization(filename, discretization_method, crosvalidation_sets=3):
                 runner.get_Fscore()
             )
             results[dataset] = results.get(dataset, []) + [measures]
+            print('dataset:{} n:{}'.format(dataset, i))
     save_data_to(results, filename)
 
 
@@ -183,11 +188,12 @@ def test_everything_on_set(filename, dataset, target_column, crosvalidation_sets
     pass
 
 
-def run_for_one():
+def run_for_one(discretization_method):
     runner = Runner()
     runner.load_data_set('datasets/wine.data.txt', 1)
-    # runner.discretize_data_set(discretization_method, 5)
-    runner.start_crossvalidation(10)
+    runner.discretize_data_set(discretization_method, 5)
+    runner.start_crossvalidation(10, ila.Ila())
+    print(runner.get_confusion_matrix())
     measures = Measures(
         -1,
         runner.get_confusion_matrix(),
@@ -200,15 +206,15 @@ def run_for_one():
 
 
 def main():
-    run_for_one()
-
-    # test_cross_validation('results/test_cross_validation.csv')
-    # test_discretization('results/test_divide_into_equal_intervals.csv',
-    #                     discretization.divide_into_equal_intervals,
-    #                     crosvalidation_sets=6)
-    # test_discretization('results/test_divide_elements_equally.csv',
-    #                     discretization.divide_elements_equally,
-    #                     crosvalidation_sets=6)
+    # for _ in range(5):
+    #     run_for_one(discretization.divide_into_equal_intervals)
+    #
+    test_discretization('results/ila_glass_divide_into_equal_intervals.csv',
+                        discretization.divide_into_equal_intervals,
+                        crosvalidation_sets=6)
+    test_discretization('results/ila_glass_divide_elements_equally.csv',
+                        discretization.divide_elements_equally,
+                        crosvalidation_sets=6)
 
 
 if __name__ == '__main__':

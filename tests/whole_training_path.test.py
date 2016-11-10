@@ -105,7 +105,7 @@ class TestNaiveBayesOnly(unittest.TestCase):
     def test_cros(self):
         nb = naive_bayes.NaiveBayes()
         nb.train(train_x, train_y)
-        predictions = nb.predict2(test_x)
+        predictions = nb.predict(test_x)
         runner = Runner()
         m = runner._build_confusion_matrix(predictions,test_y)
         print(m)

@@ -19,7 +19,7 @@ class NaiveBayes(object):
         self._build_matrice_for_nominal_values()
         self._trained = True
 
-    def predict2(self, dataset):
+    def predict(self, dataset):
         if not self._trained:
             raise Exception('Model not trained yet')
         predictions = [self._predict_class2(data_row) for data_row in dataset]
@@ -79,11 +79,6 @@ class NaiveBayes(object):
                 max_prob = prob
         return max_class
 
-    #old method
-    def predict(self, dataset):
-        if not self._trained:
-            raise Exception('Model not trained yet')
-        return [self._predict_class(data_row) for data_row in dataset]
 
     def _predict_class(self, data_row):
         probabilities = {}
