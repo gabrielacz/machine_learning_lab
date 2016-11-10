@@ -208,7 +208,7 @@ def run_for_one(discretization_method):
 def main():
     # for _ in range(5):
     #     run_for_one(discretization.divide_into_equal_intervals)
-    #
+    ####
     test_discretization('results/ila_glass_divide_into_equal_intervals.csv',
                         discretization.divide_into_equal_intervals,
                         crosvalidation_sets=6)
