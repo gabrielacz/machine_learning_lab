@@ -75,6 +75,8 @@ class Runner(object):
         return 2 * (precision * recall) / (precision + recall)
 
     def _build_confusion_matrix(self, whole_test_set_predicted, whole_test_set_real):
+        print(whole_test_set_real)
+        print(whole_test_set_predicted)
         self.__confusion_matrix_labels = list(set(whole_test_set_predicted + whole_test_set_real))
         matrix_size = len(self.__confusion_matrix_labels)
         self.__confusion_matrix = [[0. for _ in range(matrix_size)] for _ in range(matrix_size)]
@@ -184,10 +186,6 @@ def test_gaus(filename, crosvalidation_sets=3):
     save_data_to(results, filename)
 
 
-def test_everything_on_set(filename, dataset, target_column, crosvalidation_sets=3, discretization_parts=4):
-    pass
-
-
 def run_for_one(discretization_method):
     runner = Runner()
     runner.load_data_set('datasets/wine.data.txt', 1)
@@ -202,19 +200,18 @@ def run_for_one(discretization_method):
         runner.get_recall(),
         runner.get_Fscore()
     )
-    print(measures)
+
 
 
 def main():
-    # for _ in range(5):
-    #     run_for_one(discretization.divide_into_equal_intervals)
+    run_for_one(discretization.divide_into_equal_intervals)
     ####
-    test_discretization('results/ila_glass_divide_into_equal_intervals.csv',
-                        discretization.divide_into_equal_intervals,
-                        crosvalidation_sets=6)
-    test_discretization('results/ila_glass_divide_elements_equally.csv',
-                        discretization.divide_elements_equally,
-                        crosvalidation_sets=6)
+    # test_discretization('results/ila_glass_divide_into_equal_intervals.csv',
+    #                     discretization.divide_into_equal_intervals,
+    #                     crosvalidation_sets=6)
+    # test_discretization('results/ila_glass_divide_elements_equally.csv',
+    #                     discretization.divide_elements_equally,
+    #                     crosvalidation_sets=6)
 
 
 if __name__ == '__main__':
